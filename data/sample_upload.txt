@@ -1,0 +1,1 @@
+This is a sample file used by TC6 (Contact Us Form) to exercise the file-upload field.

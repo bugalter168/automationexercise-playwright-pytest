@@ -1,0 +1,173 @@
+name: UI Test Automation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test (${{ matrix.browser }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install Playwright browsers
+        run: python -m playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Run tests (parallel, ${{ matrix.browser }})
+        run: |
+          pytest -n auto --browser ${{ matrix.browser }} \
+            --alluredir=allure-results/${{ matrix.browser }}
+
+      - name: Upload Allure results (${{ matrix.browser }})
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-${{ matrix.browser }}
+          path: allure-results/${{ matrix.browser }}
+          retention-days: 30
+
+  report:
+    name: Generate & Deploy Allure Report
+    needs: test
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      pages_url: ${{ steps.pages_url.outputs.url }}
+      total: ${{ steps.summary.outputs.total }}
+      passed: ${{ steps.summary.outputs.passed }}
+      failed: ${{ steps.summary.outputs.failed }}
+      skipped: ${{ steps.summary.outputs.skipped }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all Allure result artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: allure-results-*
+          path: allure-results
+          merge-multiple: true
+
+      - name: Compute pass/fail/total summary
+        id: summary
+        run: |
+          python3 - <<'PY'
+          import glob
+          import json
+          import os
+
+          counts = {"passed": 0, "failed": 0, "broken": 0, "skipped": 0, "unknown": 0}
+          total = 0
+          for path in glob.glob("allure-results/*-result.json"):
+              with open(path) as fh:
+                  data = json.load(fh)
+              status = data.get("status", "unknown")
+              counts[status] = counts.get(status, 0) + 1
+              total += 1
+
+          passed = counts["passed"]
+          failed = counts["failed"] + counts["broken"]
+          skipped = counts["skipped"]
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as gh:
+              gh.write(f"total={total}\n")
+              gh.write(f"passed={passed}\n")
+              gh.write(f"failed={failed}\n")
+              gh.write(f"skipped={skipped}\n")
+          PY
+
+      - name: Checkout existing report history
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Generate Allure report (with history)
+        uses: simple-elf/allure-report-action@v1.9
+        if: always()
+        with:
+          allure_results: allure-results
+          allure_history: allure-history
+          gh_pages: gh-pages
+          keep_reports: 20
+
+      - name: Deploy report to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-history
+
+      - name: Resolve Pages URL
+        id: pages_url
+        run: |
+          echo "url=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/" >> "$GITHUB_OUTPUT"
+
+      - name: Write job summary
+        if: always()
+        run: |
+          {
+            echo "### Test Results"
+            echo "- Total: ${{ steps.summary.outputs.total }}"
+            echo "- Passed: ${{ steps.summary.outputs.passed }}"
+            echo "- Failed: ${{ steps.summary.outputs.failed }}"
+            echo "- Skipped: ${{ steps.summary.outputs.skipped }}"
+            echo "- Report: ${{ steps.pages_url.outputs.url }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  notify-slack:
+    name: Slack Notification
+    needs: [test, report]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Slack notification
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          payload: |
+            channel: "${{ secrets.SLACK_CHANNEL_ID }}"
+            text: "AutomationExercise suite ${{ needs.test.result == 'success' && 'PASSED' || 'FAILED' }} on ${{ github.ref_name }}"
+            blocks:
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: >-
+                    ${{ needs.test.result == 'success' && ':white_check_mark:' || ':x:' }}
+                    *AutomationExercise Suite* — *${{ needs.test.result == 'success' && 'PASSED' || 'FAILED' }}*
+              - type: "section"
+                fields:
+                  - type: "mrkdwn"
+                    text: "*Branch:*\n`${{ github.ref_name }}`"
+                  - type: "mrkdwn"
+                    text: "*Commit:*\n`${{ github.sha }}`"
+                  - type: "mrkdwn"
+                    text: "*Results:*\n${{ needs.report.outputs.passed }} passed / ${{ needs.report.outputs.failed }} failed / ${{ needs.report.outputs.total }} total"
+                  - type: "mrkdwn"
+                    text: "*Report:*\n<${{ needs.report.outputs.pages_url }}|View Allure Report>"
