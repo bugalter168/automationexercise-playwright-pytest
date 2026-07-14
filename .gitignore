@@ -8,3 +8,5 @@ test-results/
 .pytest_cache/
 playwright-report/
 *.egg-info/
+VIDEO_SCRIPT_EN.md
+VIDEO_SCRIPT_UA.md
