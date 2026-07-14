@@ -4,6 +4,7 @@ import re
 import allure
 import pytest
 from dotenv import load_dotenv
+from playwright.sync_api import expect
 
 from pages.cart_page import CartPage
 from pages.checkout_page import CheckoutPage
@@ -42,6 +43,19 @@ def browser_context_args(browser_context_args):
         "viewport": {"width": 1440, "height": 900},
         "accept_downloads": True,
     }
+
+
+@pytest.fixture(autouse=True)
+def configure_timeouts(page):
+    """Match Playwright's timeouts to the slow external site
+    (automationexercise via Cloudflare), which lags under CI's parallel load.
+    Set centrally here so no test hardcodes timeouts:
+      - navigation (page.goto & friends): 30s default -> 60s
+      - assertions (expect(...).to_be_visible etc.): 5s default -> 15s
+    Action timeouts (click/fill/scroll_into_view) keep their 30s default."""
+    page.set_default_navigation_timeout(60000)
+    expect.set_options(timeout=15000)
+    yield
 
 
 @pytest.fixture(autouse=True)

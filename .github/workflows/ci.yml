@@ -36,8 +36,12 @@ jobs:
         run: python -m playwright install --with-deps ${{ matrix.browser }}
 
       - name: Run tests (parallel, ${{ matrix.browser }})
+        # -n 2 (not -n auto): the external site (automationexercise via
+        # Cloudflare) rate-limits/slows down under heavy concurrency, and each
+        # of the 3 matrix legs already runs on its own runner, so capping
+        # workers per runner keeps total load on the site sane and cuts flake.
         run: |
-          pytest -n auto --browser ${{ matrix.browser }} \
+          pytest -n 2 --browser ${{ matrix.browser }} \
             --alluredir=allure-results/${{ matrix.browser }}
 
       - name: Upload Allure results (${{ matrix.browser }})
