@@ -99,6 +99,11 @@ def existing_user(base_url, home_page, login_page, signup_page, account_created_
     signup_page.fill_account_information(user)
     signup_page.submit_create_account()
     account_created_page.click_continue()
+    # Confirm the session is actually logged in before clicking Logout — under
+    # CI's parallel/cross-browser load the header can take longer than usual
+    # to re-render post-signup, and clicking Logout before it appears is what
+    # produced the flaky "waiting for ... Logout" timeout on CI.
+    home_page.navbar.expect_logged_in_as(user.name, timeout=15000)
     home_page.navbar.logout()
     home_page.load(base_url)
     yield user

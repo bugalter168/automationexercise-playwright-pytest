@@ -14,4 +14,8 @@ def test_scroll_up_without_arrow_button(base_url, home_page):
 
     home_page.scroll_to_top()
 
-    home_page.expect_home_page_visible()
+    # The hero text sits in a rotating carousel, so right after scrolling it
+    # can briefly be mid-transition (hidden) under slower/parallel CI runs —
+    # same class of timing issue stabilized for TC20; give it more headroom
+    # instead of a hardcoded sleep.
+    home_page.expect_home_page_visible(timeout=15000)

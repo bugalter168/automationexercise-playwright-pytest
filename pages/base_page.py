@@ -70,7 +70,7 @@ class BasePage:
             self._attach_screenshot(f"upload - {description}")
 
     def get_text(self, locator: Locator) -> str:
-        return locator.inner_text()
+        return (locator.inner_text() or "").strip()
 
     def scroll_to_bottom(self) -> None:
         with allure.step("Scroll to bottom of page"):
@@ -84,9 +84,9 @@ class BasePage:
             self.page.wait_for_timeout(300)
             self._attach_screenshot("scroll - top")
 
-    def expect_visible(self, locator: Locator, description: str) -> None:
+    def expect_visible(self, locator: Locator, description: str, timeout: float | None = None) -> None:
         with allure.step(f"Verify '{description}' is visible"):
-            expect(locator).to_be_visible()
+            expect(locator).to_be_visible(timeout=timeout)
             self._attach_screenshot(f"verify visible - {description}")
 
     def expect_hidden(self, locator: Locator, description: str) -> None:
@@ -94,9 +94,9 @@ class BasePage:
             expect(locator).to_be_hidden()
             self._attach_screenshot(f"verify hidden - {description}")
 
-    def expect_text(self, locator: Locator, text: str, description: str) -> None:
+    def expect_text(self, locator: Locator, text: str, description: str, timeout: float | None = None) -> None:
         with allure.step(f"Verify '{description}' contains text '{text}'"):
-            expect(locator).to_contain_text(text)
+            expect(locator).to_contain_text(text, timeout=timeout)
             self._attach_screenshot(f"verify text - {description}")
 
     def expect_count(self, locator: Locator, count: int, description: str) -> None:

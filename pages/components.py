@@ -42,8 +42,10 @@ class NavBar(BasePage):
     def delete_account(self) -> None:
         self.click(self.delete_account_link, "Delete Account nav link")
 
-    def expect_logged_in_as(self, username: str) -> None:
-        self.expect_text(self.logged_in_as_text, f"Logged in as {username}", "logged-in indicator")
+    def expect_logged_in_as(self, username: str, timeout: float | None = None) -> None:
+        self.expect_text(
+            self.logged_in_as_text, f"Logged in as {username}", "logged-in indicator", timeout=timeout
+        )
 
 
 class SubscriptionWidget(BasePage):

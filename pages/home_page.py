@@ -23,8 +23,8 @@ class HomePage(BasePage):
     def load(self, base_url: str) -> None:
         self.goto(base_url)
 
-    def expect_home_page_visible(self) -> None:
-        self.expect_visible(self.hero_text, "home page hero text")
+    def expect_home_page_visible(self, timeout: float | None = None) -> None:
+        self.expect_visible(self.hero_text, "home page hero text", timeout=timeout)
 
     def hover_product_card(self, index: int) -> None:
         self.hover(self.product_cards.nth(index), f"product card #{index + 1}")
