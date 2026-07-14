@@ -9,7 +9,12 @@
       "Bash(./.venv/Scripts/python.exe -m pytest tests/test_tc24_download_invoice_after_purchase.py --browser webkit -q)",
       "Bash(./.venv/Scripts/python.exe \"C:/TEMP/claude/c--Users-User-Desktop-squad-new/d903bd77-205d-472f-ad82-c7550b969204/scratchpad/inspect_invoice.py\")",
       "Bash(./.venv/Scripts/python.exe -m pytest tests/test_tc24_download_invoice_after_purchase.py --browser chromium --browser firefox --browser webkit -v)",
-      "Bash(./.venv/Scripts/python.exe -m pytest tests/test_tc01_register_user.py tests/test_tc09_search_product.py --browser chromium -v)"
+      "Bash(./.venv/Scripts/python.exe -m pytest tests/test_tc01_register_user.py tests/test_tc09_search_product.py --browser chromium -v)",
+      "Bash(./.venv/Scripts/python.exe -c \"import yaml,sys; d=yaml.safe_load\\(open\\('.github/workflows/ci.yml'\\)\\); print\\('YAML OK'\\); print\\('jobs:', list\\(d['jobs'].keys\\(\\)\\)\\); print\\('report.outputs:', list\\(d['jobs']['report']['outputs'].keys\\(\\)\\)\\)\")",
+      "Bash(./.venv/Scripts/python.exe -m pip install pyyaml -q)",
+      "Bash(./.venv/Scripts/python.exe -c \"import yaml; d=yaml.safe_load\\(open\\('.github/workflows/ci.yml'\\)\\); print\\('YAML OK'\\); print\\('jobs:', list\\(d['jobs'].keys\\(\\)\\)\\); print\\('report.outputs:', list\\(d['jobs']['report']['outputs'].keys\\(\\)\\)\\); steps=[s.get\\('name'\\) for s in d['jobs']['report']['steps']]; print\\('report steps:'\\); [print\\('  -',x\\) for x in steps]\")",
+      "Bash(./.venv/Scripts/python.exe -m uv pip install pyyaml -q)",
+      "Bash(./.venv/Scripts/python.exe -c \"import yaml; d=yaml.safe_load\\(open\\('.github/workflows/ci.yml'\\)\\); print\\('YAML OK'\\); print\\('jobs:', list\\(d['jobs'].keys\\(\\)\\)\\); print\\('report.outputs:', list\\(d['jobs']['report']['outputs'].keys\\(\\)\\)\\); print\\('report steps:'\\); [print\\('  -',s.get\\('name'\\)\\) for s in d['jobs']['report']['steps']]\")"
     ]
   }
 }
