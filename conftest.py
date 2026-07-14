@@ -33,7 +33,15 @@ def base_url() -> str:
 
 @pytest.fixture
 def browser_context_args(browser_context_args):
-    return {**browser_context_args, "viewport": {"width": 1440, "height": 900}}
+    # accept_downloads defaults to True in Playwright, but WebKit's download
+    # handling is more timing-sensitive than Chromium/Firefox (see
+    # OrderPlacedPage.download_invoice), so set it explicitly rather than
+    # relying on the implicit default.
+    return {
+        **browser_context_args,
+        "viewport": {"width": 1440, "height": 900},
+        "accept_downloads": True,
+    }
 
 
 @pytest.fixture(autouse=True)

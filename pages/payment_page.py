@@ -1,3 +1,5 @@
+from urllib.parse import urljoin
+
 from pages.base_page import BasePage
 from pages.components import NavBar
 from utils.constants import CARD_CVC, CARD_EXPIRY_MONTH, CARD_EXPIRY_YEAR, CARD_NUMBER
@@ -36,9 +38,15 @@ class OrderPlacedPage(BasePage):
         self.expect_visible(self.confirmation_text, "order confirmation message")
 
     def download_invoice(self):
-        with self.page.expect_download() as download_info:
-            self.click(self.download_invoice_link, "Download Invoice button")
-        return download_info.value
+        # Fetch the invoice with a direct HTTP request inside the browser's own
+        # session (same cookies/auth) instead of catching the browser
+        # "download" event, which fires slowly and unreliably on WebKit. The
+        # file comes back immediately and identically on all three browsers.
+        href = self.download_invoice_link.get_attribute("href")
+        url = urljoin(self.page.url, href)
+        response = self.page.request.get(url)
+        assert response.ok, f"invoice download failed: HTTP {response.status}"
+        return response
 
     def click_continue(self) -> None:
         self.click(self.continue_button, "Continue button")

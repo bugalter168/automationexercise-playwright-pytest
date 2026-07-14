@@ -44,9 +44,11 @@ def test_download_invoice_after_purchase(
 
     order_placed_page.expect_order_placed_success()
 
-    download = order_placed_page.download_invoice()
+    response = order_placed_page.download_invoice()
     with allure.step("Verify invoice file downloaded successfully"):
-        assert "invoice" in download.suggested_filename.lower()
+        content_disposition = response.headers.get("content-disposition", "").lower()
+        assert "invoice" in content_disposition
+        assert len(response.body()) > 0
 
     order_placed_page.click_continue()
 

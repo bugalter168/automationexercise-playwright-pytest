@@ -4,7 +4,12 @@
       "Bash(./.venv/Scripts/python.exe -m pytest tests/test_tc14_place_order_register_while_checkout.py tests/test_tc15_place_order_register_before_checkout.py tests/test_tc16_place_order_login_before_checkout.py tests/test_tc23_verify_address_details_in_checkout.py tests/test_tc24_download_invoice_after_purchase.py -v --browser chromium)",
       "Bash(./.venv/Scripts/python.exe -m pytest tests/test_tc12_add_products_in_cart.py --browser webkit --browser chromium --browser firefox -v)",
       "Bash(./.venv/Scripts/python.exe -m pytest tests/test_tc26_scroll_up_without_arrow_button.py --browser firefox --browser chromium --browser webkit -v)",
-      "Bash(./.venv/Scripts/python.exe -m pytest tests/test_tc13_verify_product_quantity_in_cart.py tests/test_tc25_scroll_up_with_arrow_button.py --browser chromium -v)"
+      "Bash(./.venv/Scripts/python.exe -m pytest tests/test_tc13_verify_product_quantity_in_cart.py tests/test_tc25_scroll_up_with_arrow_button.py --browser chromium -v)",
+      "Bash(./.venv/Scripts/python.exe -m pytest tests/test_tc24_download_invoice_after_purchase.py --browser webkit -v)",
+      "Bash(./.venv/Scripts/python.exe -m pytest tests/test_tc24_download_invoice_after_purchase.py --browser webkit -q)",
+      "Bash(./.venv/Scripts/python.exe \"C:/TEMP/claude/c--Users-User-Desktop-squad-new/d903bd77-205d-472f-ad82-c7550b969204/scratchpad/inspect_invoice.py\")",
+      "Bash(./.venv/Scripts/python.exe -m pytest tests/test_tc24_download_invoice_after_purchase.py --browser chromium --browser firefox --browser webkit -v)",
+      "Bash(./.venv/Scripts/python.exe -m pytest tests/test_tc01_register_user.py tests/test_tc09_search_product.py --browser chromium -v)"
     ]
   }
 }
