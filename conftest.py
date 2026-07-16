@@ -1,10 +1,11 @@
 import os
 import re
+from collections.abc import Generator
 
 import allure
 import pytest
 from dotenv import load_dotenv
-from playwright.sync_api import expect
+from playwright.sync_api import APIRequestContext, Page, Playwright, expect
 
 from pages.cart_page import CartPage
 from pages.checkout_page import CheckoutPage
@@ -33,7 +34,7 @@ def base_url() -> str:
 
 
 @pytest.fixture
-def browser_context_args(browser_context_args):
+def browser_context_args(browser_context_args: dict) -> dict:
     # accept_downloads defaults to True in Playwright, but WebKit's download
     # handling is more timing-sensitive than Chromium/Firefox (see
     # OrderPlacedPage.download_invoice), so set it explicitly rather than
@@ -46,7 +47,7 @@ def browser_context_args(browser_context_args):
 
 
 @pytest.fixture(autouse=True)
-def configure_timeouts(page):
+def configure_timeouts(page: Page) -> Generator[None, None, None]:
     """Match Playwright's timeouts to the slow external site
     (automationexercise via Cloudflare), which lags under CI's parallel load.
     Set centrally here so no test hardcodes timeouts:
@@ -59,14 +60,14 @@ def configure_timeouts(page):
 
 
 @pytest.fixture(autouse=True)
-def block_ad_requests(page):
+def block_ad_requests(page: Page) -> Generator[None, None, None]:
     """Abort ad-network requests so ad iframes never render and intercept clicks."""
     page.route(AD_DOMAIN_PATTERN, lambda route: route.abort())
     yield
 
 
 @pytest.hookimpl(hookwrapper=True)
-def pytest_runtest_makereport(item, call):
+def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo) -> Generator[None, None, None]:
     outcome = yield
     report = outcome.get_result()
     if report.when == "call" and report.failed:
@@ -88,16 +89,25 @@ def new_user_data() -> UserData:
 
 
 @pytest.fixture
-def registered_user(base_url):
+def api_request_context(base_url: str, playwright: Playwright) -> Generator[APIRequestContext, None, None]:
+    """Playwright's built-in HTTP client for API teardown — keeps cleanup
+    requests inside Playwright traces and drops the external `requests` dep."""
+    context = playwright.request.new_context(base_url=base_url)
+    yield context
+    context.dispose()
+
+
+@pytest.fixture
+def registered_user(api_request_context: APIRequestContext) -> Generator[UserData, None, None]:
     """Yields Faker-generated user data; guarantees account cleanup via the API
     even if a test fails before reaching its own UI 'Delete Account' step."""
     user = generate_user()
     yield user
-    delete_account(base_url, user.email, user.password)
+    delete_account(api_request_context, user.email, user.password)
 
 
 @pytest.fixture
-def sample_upload_file():
+def sample_upload_file() -> str:
     return os.path.join(os.path.dirname(__file__), "data", "sample_upload.txt")
 
 
@@ -105,12 +115,19 @@ def sample_upload_file():
 
 
 @pytest.fixture
-def home_page(page):
+def home_page(page: Page) -> HomePage:
     return HomePage(page)
 
 
 @pytest.fixture
-def existing_user(base_url, home_page, login_page, signup_page, account_created_page):
+def existing_user(
+    base_url: str,
+    api_request_context: APIRequestContext,
+    home_page: HomePage,
+    login_page: LoginPage,
+    signup_page: SignupPage,
+    account_created_page: AccountCreatedPage,
+) -> Generator[UserData, None, None]:
     """Registers a fresh account via the UI, logs it back out, and hands the
     credentials to a test that needs to log in against a *pre-existing* user
     (TC2, TC4, TC16, TC20). Cleans up via the API in teardown."""
@@ -129,69 +146,69 @@ def existing_user(base_url, home_page, login_page, signup_page, account_created_
     home_page.navbar.logout()
     home_page.load(base_url)
     yield user
-    delete_account(base_url, user.email, user.password)
+    delete_account(api_request_context, user.email, user.password)
 
 
 @pytest.fixture
-def login_page(page):
+def login_page(page: Page) -> LoginPage:
     return LoginPage(page)
 
 
 @pytest.fixture
-def signup_page(page):
+def signup_page(page: Page) -> SignupPage:
     return SignupPage(page)
 
 
 @pytest.fixture
-def account_created_page(page):
+def account_created_page(page: Page) -> AccountCreatedPage:
     return AccountCreatedPage(page)
 
 
 @pytest.fixture
-def account_deleted_page(page):
+def account_deleted_page(page: Page) -> AccountDeletedPage:
     return AccountDeletedPage(page)
 
 
 @pytest.fixture
-def products_page(page):
+def products_page(page: Page) -> ProductsPage:
     return ProductsPage(page)
 
 
 @pytest.fixture
-def category_brand_page(page):
+def category_brand_page(page: Page) -> CategoryBrandPage:
     return CategoryBrandPage(page)
 
 
 @pytest.fixture
-def product_detail_page(page):
+def product_detail_page(page: Page) -> ProductDetailPage:
     return ProductDetailPage(page)
 
 
 @pytest.fixture
-def cart_page(page):
+def cart_page(page: Page) -> CartPage:
     return CartPage(page)
 
 
 @pytest.fixture
-def checkout_page(page):
+def checkout_page(page: Page) -> CheckoutPage:
     return CheckoutPage(page)
 
 
 @pytest.fixture
-def payment_page(page):
+def payment_page(page: Page) -> PaymentPage:
     return PaymentPage(page)
 
 
 @pytest.fixture
-def order_placed_page(page):
+def order_placed_page(page: Page) -> OrderPlacedPage:
     return OrderPlacedPage(page)
 
 
 @pytest.fixture
-def contact_page(page):
+def contact_page(page: Page) -> ContactPage:
     return ContactPage(page)
 
 
 @pytest.fixture
-def test_cases_page(page):
+def test_cases_page(page: Page) -> TestCasesPage:
     return TestCasesPage(page)

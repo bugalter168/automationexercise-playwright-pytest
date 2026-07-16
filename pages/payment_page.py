@@ -1,12 +1,14 @@
 from urllib.parse import urljoin
 
+from playwright.sync_api import APIResponse, Page
+
 from pages.base_page import BasePage
 from pages.components import NavBar
 from utils.constants import CARD_CVC, CARD_EXPIRY_MONTH, CARD_EXPIRY_YEAR, CARD_NUMBER
 
 
 class PaymentPage(BasePage):
-    def __init__(self, page):
+    def __init__(self, page: Page):
         super().__init__(page)
         self.name_on_card_input = page.locator('input[name="name_on_card"]')
         self.card_number_input = page.locator('input[name="card_number"]')
@@ -25,7 +27,7 @@ class PaymentPage(BasePage):
 
 
 class OrderPlacedPage(BasePage):
-    def __init__(self, page):
+    def __init__(self, page: Page):
         super().__init__(page)
         self.navbar = NavBar(page)
         self.success_heading = page.locator('[data-qa="order-placed"]')
@@ -37,7 +39,7 @@ class OrderPlacedPage(BasePage):
         self.expect_visible(self.success_heading, "'ORDER PLACED!' heading")
         self.expect_visible(self.confirmation_text, "order confirmation message")
 
-    def download_invoice(self):
+    def download_invoice(self) -> APIResponse:
         # Fetch the invoice with a direct HTTP request inside the browser's own
         # session (same cookies/auth) instead of catching the browser
         # "download" event, which fires slowly and unreliably on WebKit. The

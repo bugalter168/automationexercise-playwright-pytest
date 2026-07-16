@@ -1,10 +1,12 @@
+from playwright.sync_api import Page
+
 from pages.base_page import BasePage
 
 
 class NavBar(BasePage):
     """Header navigation bar present on every page of the site."""
 
-    def __init__(self, page):
+    def __init__(self, page: Page):
         super().__init__(page)
         header = page.locator("#header")
         # Nav link accessible names are prefixed with a Font Awesome icon glyph
@@ -51,7 +53,7 @@ class NavBar(BasePage):
 class SubscriptionWidget(BasePage):
     """Footer subscription form, present on the home and cart pages."""
 
-    def __init__(self, page):
+    def __init__(self, page: Page):
         super().__init__(page)
         self.heading = page.locator("h2", has_text="Subscription")
         self.email_input = page.locator("#susbscribe_email")
@@ -76,7 +78,7 @@ class CategorySidebar(BasePage):
     """Left-hand CATEGORY / BRANDS sidebar shown on the home, products,
     category and brand listing pages."""
 
-    def __init__(self, page):
+    def __init__(self, page: Page):
         super().__init__(page)
         self.sidebar = page.locator(".left-sidebar")
         # Category accordion toggles are anchors with fragment hrefs (#Women …).

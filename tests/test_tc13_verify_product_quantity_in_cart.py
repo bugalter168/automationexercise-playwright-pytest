@@ -1,5 +1,5 @@
 import allure
-
+from playwright.sync_api import expect
 
 @allure.feature("Cart")
 @allure.story("Product Quantity")
@@ -22,4 +22,4 @@ def test_verify_product_quantity_in_cart(base_url, home_page, product_detail_pag
 
     cart_page.expect_product_in_cart(int(product_id))
     with allure.step("Verify cart quantity is exactly 4"):
-        assert cart_page.get_quantity(int(product_id)) == "4"
+        expect(cart_page.quantity_locator(int(product_id))).to_have_text("4")

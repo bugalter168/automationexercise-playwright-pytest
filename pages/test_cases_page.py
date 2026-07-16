@@ -1,3 +1,5 @@
+from playwright.sync_api import Page
+
 from pages.base_page import BasePage
 from pages.components import NavBar
 
@@ -5,7 +7,7 @@ from pages.components import NavBar
 class TestCasesPage(BasePage):
     URL_PATH = "/test_cases"
 
-    def __init__(self, page):
+    def __init__(self, page: Page):
         super().__init__(page)
         self.navbar = NavBar(page)
         self.page_heading = page.locator("h2", has_text="Test Cases")

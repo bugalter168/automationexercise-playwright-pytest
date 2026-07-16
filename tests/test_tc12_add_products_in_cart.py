@@ -1,4 +1,5 @@
 import allure
+from playwright.sync_api import expect
 
 
 @allure.feature("Cart")
@@ -24,7 +25,6 @@ def test_add_products_in_cart(base_url, home_page, products_page, cart_page):
 
     for product_id in (first_product_id, second_product_id):
         with allure.step(f"Verify price, quantity and total for product {product_id}"):
-            assert cart_page.get_quantity(product_id) == "1"
+            expect(cart_page.quantity_locator(product_id)).to_have_text("1")
             price = cart_page.get_price(product_id)
-            total = cart_page.get_total(product_id)
-            assert price == total
+            expect(cart_page.total_locator(product_id)).to_have_text(price)

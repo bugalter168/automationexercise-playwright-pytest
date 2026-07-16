@@ -1,3 +1,5 @@
+from playwright.sync_api import Page
+
 from pages.base_page import BasePage
 from utils.data_generator import UserData
 
@@ -5,7 +7,7 @@ from utils.data_generator import UserData
 class SignupPage(BasePage):
     """The 'ENTER ACCOUNT INFORMATION' page shown at /signup after Signup is submitted."""
 
-    def __init__(self, page):
+    def __init__(self, page: Page):
         super().__init__(page)
         self.account_info_heading = page.locator("h2", has_text="Enter Account Information")
 
@@ -60,7 +62,7 @@ class SignupPage(BasePage):
 
 
 class AccountCreatedPage(BasePage):
-    def __init__(self, page):
+    def __init__(self, page: Page):
         super().__init__(page)
         self.heading = page.locator('[data-qa="account-created"]')
         self.continue_button = page.locator('[data-qa="continue-button"]')
@@ -73,7 +75,7 @@ class AccountCreatedPage(BasePage):
 
 
 class AccountDeletedPage(BasePage):
-    def __init__(self, page):
+    def __init__(self, page: Page):
         super().__init__(page)
         self.heading = page.locator('[data-qa="account-deleted"]')
         self.continue_button = page.locator('[data-qa="continue-button"]')

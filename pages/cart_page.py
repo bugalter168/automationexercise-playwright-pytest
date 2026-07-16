@@ -1,11 +1,12 @@
 from pages.base_page import BasePage
 from pages.components import NavBar, SubscriptionWidget
+from playwright.sync_api import Locator, Page
 
 
 class CartPage(BasePage):
     URL_PATH = "/view_cart"
 
-    def __init__(self, page):
+    def __init__(self, page: Page):
         super().__init__(page)
         self.navbar = NavBar(page)
         self.subscription = SubscriptionWidget(page)
@@ -24,8 +25,17 @@ class CartPage(BasePage):
     def load(self, base_url: str) -> None:
         self.goto(f"{base_url}{self.URL_PATH}")
 
-    def row_for_product(self, product_id: int):
+    def row_for_product(self, product_id: int) -> Locator:
         return self.page.locator(f"#product-{product_id}")
+    
+    def price_locator(self, product_id: int) -> Locator:
+        return self.row_for_product(product_id).locator(".cart_price")
+
+    def quantity_locator(self, product_id: int) -> Locator:
+        return self.row_for_product(product_id).locator(".cart_quantity button")
+
+    def total_locator(self, product_id: int) -> Locator:
+        return self.row_for_product(product_id).locator(".cart_total .cart_total_price")
 
     def expect_product_in_cart(self, product_id: int) -> None:
         self.expect_visible(self.row_for_product(product_id), f"cart row for product {product_id}")
@@ -34,13 +44,13 @@ class CartPage(BasePage):
         self.expect_hidden(self.row_for_product(product_id), f"cart row for product {product_id}")
 
     def get_price(self, product_id: int) -> str:
-        return self.get_text(self.row_for_product(product_id).locator(".cart_price"))
+        return self.get_text(self.price_locator(product_id))
 
     def get_quantity(self, product_id: int) -> str:
-        return self.get_text(self.row_for_product(product_id).locator(".cart_quantity button"))
+        return self.get_text(self.quantity_locator(product_id))
 
     def get_total(self, product_id: int) -> str:
-        return self.get_text(self.row_for_product(product_id).locator(".cart_total .cart_total_price"))
+        return self.get_text(self.total_locator(product_id))
 
     def remove_product(self, product_id: int) -> None:
         self.click(

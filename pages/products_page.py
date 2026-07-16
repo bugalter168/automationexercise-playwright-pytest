@@ -1,3 +1,5 @@
+from playwright.sync_api import Page
+
 from pages.base_page import BasePage
 from pages.components import CategorySidebar, NavBar
 
@@ -5,7 +7,7 @@ from pages.components import CategorySidebar, NavBar
 class ProductsPage(BasePage):
     URL_PATH = "/products"
 
-    def __init__(self, page):
+    def __init__(self, page: Page):
         super().__init__(page)
         self.navbar = NavBar(page)
         self.sidebar = CategorySidebar(page)
@@ -70,7 +72,7 @@ class ProductsPage(BasePage):
 class CategoryBrandPage(BasePage):
     """The product-listing page shown at /category_products/<id> or /brand_products/<name>."""
 
-    def __init__(self, page):
+    def __init__(self, page: Page):
         super().__init__(page)
         self.navbar = NavBar(page)
         self.sidebar = CategorySidebar(page)
